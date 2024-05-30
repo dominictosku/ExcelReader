@@ -1,0 +1,79 @@
+﻿@page "/"
+@using ExcelReader.Entities
+@using ExcelReader.Services
+@inject ExcelService ExcelService;
+@inject ILogger<Home> Logger;
+
+<PageTitle>Home</PageTitle>
+
+<h3>Aktien Statistik</h3>
+<InputFile OnChange="HandleFileSelected" accept=".xlsx,.xls" />
+
+@if (stocks != null && stocks.Any())
+{
+    <p>File Uploaded: @fileName</p>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>ISIN</th>
+                    <th>Price</th>
+                    <th>Count</th>
+                    <th>Order Type</th>
+                    <th>Order Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in stocks)
+                {
+                    <tr>
+                        <td>@stock.Id</td>
+                        <td>@stock.Name</td>
+                        <td>@stock.ISIN</td>
+                        <td>@stock.Price.ToString("C")</td>
+                        <td>@stock.Count</td>
+                        <td>@stock.OrderType</td>
+                        <td>@stock.OrderDate.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div>Keine Einträge vorhanden</div>
+}
+
+
+@code {
+    private string fileName;
+    private List<Stock>? stocks;
+    private string? errorMessage;
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        fileName = file.Name;
+
+        if (file != null)
+        {
+            try
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    var buffer = new byte[file.Size];
+                    await stream.ReadAsync(buffer, 0, (int)file.Size);
+                    stocks = ExcelService.ReadExcelFile(buffer);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to read excel: {ex}", ex);
+                errorMessage = $"Error reading file";
+            }
+        }
+    }
+}
