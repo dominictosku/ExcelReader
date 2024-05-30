@@ -1,9 +1,10 @@
 ﻿using ExcelReader.Entities;
+using ExcelReader.Interfaces;
 using OfficeOpenXml;
 namespace ExcelReader.Services
 {
-	public class ExcelService
-	{
+    public class ExcelService : IExcelService
+    {
         public List<Stock> ReadExcelFile(byte[] fileData)
         {
             using (var stream = new MemoryStream(fileData))
@@ -13,9 +14,9 @@ namespace ExcelReader.Services
                 var result = new List<Stock>();
                 if (worksheet != null)
                 {
+                    int id = 1;
                     for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
                     {
-                        int id = 1;
                         var stock = new Stock
                         {
                             Id = id++,

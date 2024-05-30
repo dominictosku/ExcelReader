@@ -1,0 +1,36 @@
+﻿@using ExcelReader.Entities
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>ISIN</th>
+                <th>Price</th>
+                <th>Count</th>
+                <th>Order Type</th>
+                <th>Order Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Stocks)
+            {
+                <tr>
+                    <td>@stock.Id</td>
+                    <td>@stock.Name</td>
+                    <td>@stock.ISIN</td>
+                    <td>@stock.Price.ToString("C")</td>
+                    <td>@stock.Count</td>
+                    <td>@stock.OrderType</td>
+                    <td>@stock.OrderDate.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public List<Stock> Stocks { get; set; } = default!;
+}

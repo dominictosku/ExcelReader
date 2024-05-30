@@ -1,7 +1,8 @@
 ﻿@page "/"
 @using ExcelReader.Entities
+@using ExcelReader.Interfaces
 @using ExcelReader.Services
-@inject ExcelService ExcelService;
+@inject IExcelService ExcelService;
 @inject ILogger<Home> Logger;
 
 <PageTitle>Home</PageTitle>
@@ -12,35 +13,8 @@
 @if (stocks != null && stocks.Any())
 {
     <p>File Uploaded: @fileName</p>
-    <div class="table-responsive">
-        <table class="table table-hover table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>ISIN</th>
-                    <th>Price</th>
-                    <th>Count</th>
-                    <th>Order Type</th>
-                    <th>Order Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var stock in stocks)
-                {
-                    <tr>
-                        <td>@stock.Id</td>
-                        <td>@stock.Name</td>
-                        <td>@stock.ISIN</td>
-                        <td>@stock.Price.ToString("C")</td>
-                        <td>@stock.Count</td>
-                        <td>@stock.OrderType</td>
-                        <td>@stock.OrderDate.ToString("yyyy-MM-dd")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <ExcelTable Stocks="stocks" />
+
 }
 else
 {
@@ -49,7 +23,7 @@ else
 
 
 @code {
-    private string fileName;
+    private string fileName = string.Empty;
     private List<Stock>? stocks;
     private string? errorMessage;
 
