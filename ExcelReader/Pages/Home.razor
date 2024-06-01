@@ -8,35 +8,64 @@
 <PageTitle>Home</PageTitle>
 
 <h3>Aktien Statistik</h3>
-<InputFile OnChange="HandleFileSelected" accept=".xlsx,.xls" />
+<div class="col-md-6 p-3">
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Wähle eine Datei für die Berechnung aus.</RadzenText>
+        <RadzenUpload Change=@HandleFileSelected class="w-100"
+                      ChooseText="Auswählen"
+                      InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" />
+    </RadzenCard>
+</div>
 
 @if (stocks != null && stocks.Any())
 {
-    <p>File Uploaded: @fileName</p>
-    <ExcelTable Stocks="stocks" />
+	<RadzenTabs RenderMode="TabRenderMode.Client" @bind-SelectedIndex=@selectedIndex>
+		<Tabs>
+			<RadzenTabsItem Text="Verlauf">
+				<ExcelTable Stocks="stocks" />
+			</RadzenTabsItem>
+			<RadzenTabsItem Text="Jahresbericht">
+			</RadzenTabsItem>
+		</Tabs>
+	</RadzenTabs>
 
 }
 else
 {
-    <div>Keine Einträge vorhanden</div>
+	<div>Keine Einträge vorhanden</div>
 }
+
+<style>
+    #ddUpload {
+        left: 0;
+    }
+
+        #ddUpload .rz-fileupload-buttonbar .rz-fileupload-choose {
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 0;
+        }
+</style>
 
 
 @code {
-    private string fileName = string.Empty;
-    private List<Stock>? stocks;
-    private string? errorMessage;
+	private string fileName = string.Empty;
+	private List<Stock>? stocks;
+	private string? errorMessage;
+	int selectedIndex = 0;
 
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        fileName = file.Name;
+    private async Task HandleFileSelected(UploadChangeEventArgs args)
+	{
 
-        if (file != null)
+        long maxFileSize = 10 * 1024 * 1024;
+        foreach (var file in args.Files)
         {
+		    fileName = file.Name;
+
             try
             {
-                using (var stream = file.OpenReadStream())
+                using (var stream = file.OpenReadStream(maxFileSize))
                 {
                     var buffer = new byte[file.Size];
                     await stream.ReadAsync(buffer, 0, (int)file.Size);
@@ -46,8 +75,8 @@ else
             catch (Exception ex)
             {
                 Logger.LogError("Failed to read excel: {ex}", ex);
-                errorMessage = $"Error reading file";
+                errorMessage = $"Fehler beim laden der Datei";
             }
         }
-    }
+	}
 }
