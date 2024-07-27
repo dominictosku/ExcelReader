@@ -1,4 +1,5 @@
 ﻿using ExcelReader.Entities;
+using ExcelReader.Entities.Enums;
 using ExcelReader.Services;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Test.Unit
             var excelService = new ExcelService();
 
             //act
-            var result = excelService.ReadExcelFile(fileData);
+            var result = excelService.ReadExcelFile(SupportedBroker.Swissquote, fileData);
             Assert.NotNull(result);
             result = [.. result.OrderBy(x => x.Name)];
             expectedStocks = [.. result.OrderBy(x => x.Name)];

@@ -1,4 +1,6 @@
-﻿namespace ExcelReader.Entities
+﻿using ExcelReader.Entities.Enums;
+
+namespace ExcelReader.Entities
 {
 	public class Stock
 	{
@@ -9,11 +11,5 @@
 		public int Count { get; set; }
 		public OrderType OrderType {  get; set; }
 		public DateTime OrderDate { get; set; }
-	}
-
-	public enum OrderType
-	{
-		Buy,
-		Sell
 	}
 }

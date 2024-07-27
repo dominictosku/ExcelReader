@@ -1,11 +1,20 @@
 ﻿using ExcelReader.Entities;
+using ExcelReader.Entities.Enums;
 using ExcelReader.Interfaces;
 using OfficeOpenXml;
 namespace ExcelReader.Services
 {
     public class ExcelService : IExcelService
     {
-        public List<Stock> ReadExcelFile(byte[] fileData)
+        public List<Stock> ReadExcelFile(SupportedBroker supportedBroker, byte[] fileData)
+        {
+            if(supportedBroker == SupportedBroker.Swissquote)
+                return ReadSwissquoteFile(fileData);
+
+            throw new NotSupportedException("This broker is not supported");
+        }
+
+        private List<Stock> ReadSwissquoteFile(byte[] fileData)
         {
             using (var stream = new MemoryStream(fileData))
             using (var package = new ExcelPackage(stream))

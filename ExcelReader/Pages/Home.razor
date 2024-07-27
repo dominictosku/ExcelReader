@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using ExcelReader.Entities
+@using ExcelReader.Entities.Enums
 @using ExcelReader.Interfaces
 @using ExcelReader.Services
 @inject IExcelService ExcelService;
@@ -17,15 +18,19 @@
     </RadzenCard>
 </div>
 
-@if (stocks != null && stocks.Any())
+@if (BrokerStocks != null && BrokerStocks.Any())
 {
 	<RadzenTabs RenderMode="TabRenderMode.Client" @bind-SelectedIndex=@selectedIndex>
 		<Tabs>
-			<RadzenTabsItem Text="Verlauf">
-				<ExcelTable Stocks="stocks" />
-			</RadzenTabsItem>
-			<RadzenTabsItem Text="Jahresbericht">
-			</RadzenTabsItem>
+			@foreach (var brokerStock in BrokerStocks)
+			{
+
+				<RadzenTabsItem Text="Verlauf">
+					<ExcelTable BrokerStocks="brokerStock" />
+				</RadzenTabsItem>
+				<RadzenTabsItem Text="Jahresbericht">
+				</RadzenTabsItem>
+			}
 		</Tabs>
 	</RadzenTabs>
 
@@ -50,18 +55,18 @@ else
 
 
 @code {
-	private string fileName = string.Empty;
-	private List<Stock>? stocks;
-	private string? errorMessage;
-	int selectedIndex = 0;
+    private string fileName = string.Empty;
+    private List<BrokerStocks>? BrokerStocks;
+    private string? errorMessage;
+    int selectedIndex = 0;
 
     private async Task HandleFileSelected(UploadChangeEventArgs args)
-	{
+    {
 
         long maxFileSize = 10 * 1024 * 1024;
         foreach (var file in args.Files)
         {
-		    fileName = file.Name;
+            fileName = file.Name;
 
             try
             {
@@ -69,7 +74,11 @@ else
                 {
                     var buffer = new byte[file.Size];
                     await stream.ReadAsync(buffer, 0, (int)file.Size);
-                    stocks = ExcelService.ReadExcelFile(buffer);
+                    var stocks = ExcelService.ReadExcelFile(SupportedBroker.Swissquote, buffer);
+                    BrokerStocks = new()
+                    {
+                        new BrokerStocks("Swissquote", stocks)
+                    };
                 }
             }
             catch (Exception ex)
