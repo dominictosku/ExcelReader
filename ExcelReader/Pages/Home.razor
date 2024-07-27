@@ -15,6 +15,11 @@
         <RadzenUpload Change=@HandleFileSelected class="w-100"
                       ChooseText="Auswählen"
                       InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" />
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenLabel Text="Broker auswählen" Component="Broker" />
+            <RadzenDropDown @bind-Value=@SelectedBroker Data="@(Enum.GetValues(typeof(SupportedBroker)).Cast<Enum>())" Style="width: 100%; max-width: 400px;" Name="Broker" />
+        </RadzenStack>
+        <RadzenButton Text="Upload" Click=@(args => UploadFile(SelectedBroker)) class="rz-mt-4" />
     </RadzenCard>
 </div>
 
@@ -24,11 +29,8 @@
 		<Tabs>
 			@foreach (var brokerStock in BrokerStocks)
 			{
-
-				<RadzenTabsItem Text="Verlauf">
+                <RadzenTabsItem Text="@brokerStock.Name">
 					<ExcelTable BrokerStocks="brokerStock" />
-				</RadzenTabsItem>
-				<RadzenTabsItem Text="Jahresbericht">
 				</RadzenTabsItem>
 			}
 		</Tabs>
@@ -55,37 +57,53 @@ else
 
 
 @code {
-    private string fileName = string.Empty;
     private List<BrokerStocks>? BrokerStocks;
+    private SupportedBroker SelectedBroker;
+    private FileInfo? CurrentUpload;
     private string? errorMessage;
     int selectedIndex = 0;
 
-    private async Task HandleFileSelected(UploadChangeEventArgs args)
+    private void HandleFileSelected(UploadChangeEventArgs args)
     {
+        if (args.Files.Any())
+            CurrentUpload = args.Files.First();
+    }
 
+    private async Task UploadFile(SupportedBroker broker)
+    {
         long maxFileSize = 10 * 1024 * 1024;
-        foreach (var file in args.Files)
-        {
-            fileName = file.Name;
+        if (CurrentUpload is null)
+            return;
 
-            try
+        try
+        {
+            using (var stream = CurrentUpload.OpenReadStream(maxFileSize))
             {
-                using (var stream = file.OpenReadStream(maxFileSize))
-                {
-                    var buffer = new byte[file.Size];
-                    await stream.ReadAsync(buffer, 0, (int)file.Size);
-                    var stocks = ExcelService.ReadExcelFile(SupportedBroker.Swissquote, buffer);
-                    BrokerStocks = new()
-                    {
-                        new BrokerStocks("Swissquote", stocks)
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to read excel: {ex}", ex);
-                errorMessage = $"Fehler beim laden der Datei";
+                var buffer = new byte[CurrentUpload.Size];
+                await stream.ReadAsync(buffer, 0, (int)CurrentUpload.Size);
+                var stocks = ExcelService.ReadExcelFile(broker, buffer);
+                var brokerStock = new BrokerStocks(broker.ToString(), stocks);
+                AddBrokerStock(brokerStock);
             }
         }
-	}
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to read excel: {ex}", ex);
+            errorMessage = $"Fehler beim laden der Datei";
+        }
+    }
+
+    private void AddBrokerStock(BrokerStocks brokerStock)
+    {
+        if (BrokerStocks is null)
+            BrokerStocks = new();
+        int index = BrokerStocks.FindIndex(b => b.Name == brokerStock.Name);
+        if (index != -1)
+        {
+            BrokerStocks[index] = brokerStock;
+            return;
+        }
+
+        BrokerStocks.Add(brokerStock);
+    }
 }
