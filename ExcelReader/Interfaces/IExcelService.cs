@@ -5,6 +5,6 @@ namespace ExcelReader.Interfaces
 {
     public interface IExcelService
     {
-        List<Stock> ReadExcelFile(SupportedBroker supportedBroker, byte[] fileData);
+        List<Transactions> ReadExcelFile(SupportedBroker supportedBroker, byte[] fileData);
     }
 }

@@ -57,7 +57,7 @@ else
 
 
 @code {
-    private List<BrokerStocks>? BrokerStocks;
+    private List<BrokerWallet>? BrokerStocks;
     private SupportedBroker SelectedBroker;
     private FileInfo? CurrentUpload;
     private string? errorMessage;
@@ -82,7 +82,7 @@ else
                 var buffer = new byte[CurrentUpload.Size];
                 await stream.ReadAsync(buffer, 0, (int)CurrentUpload.Size);
                 var stocks = ExcelService.ReadExcelFile(broker, buffer);
-                var brokerStock = new BrokerStocks(broker.ToString(), stocks);
+                var brokerStock = new BrokerWallet(broker.ToString(), stocks);
                 AddBrokerStock(brokerStock);
             }
         }
@@ -93,7 +93,7 @@ else
         }
     }
 
-    private void AddBrokerStock(BrokerStocks brokerStock)
+    private void AddBrokerStock(BrokerWallet brokerStock)
     {
         if (BrokerStocks is null)
             BrokerStocks = new();
