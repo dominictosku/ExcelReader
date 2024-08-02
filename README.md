@@ -1,12 +1,19 @@
 # Blazor Excel File Upload and Processing
+For managing and analysing your stock and cryptos in one place. Useful for filling out tax return.
 
-This Blazor WebAssembly project demonstrates how to upload Excel files (.xlsx, .xls), parse them, and display their contents as objects within the application. The project uses EPPlus to read Excel files client-side and converts them into a list of custom class objects.
+This Blazor WebAssembly project allows to upload Excel files (.xlsx, .xls), parse them, and display their contents as objects within the application. The project uses EPPlus to read Excel files client-side and converts them into a list of custom class objects.
 
 ## Features
 
 - File upload limited to Excel files (.xlsx and .xls).
 - Parsing Excel files to read data into a custom `Stock` class.
 - Displaying the parsed data in a user-friendly format.
+
+## Supported Broker
+- Swissquote
+- Degiro
+- Coinbase
+- Crypto.com
 
 ## Prerequisites
 
