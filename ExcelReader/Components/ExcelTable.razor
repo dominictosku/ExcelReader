@@ -1,4 +1,5 @@
 ﻿@using ExcelReader.Entities
+<h1>Broker: @BrokerStocks.Name</h1>
 <div class="table-responsive">
     <table class="table table-hover table-striped">
         <thead class="thead-dark">
@@ -13,24 +14,77 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var stock in Stocks)
+            @foreach (var transaction in Transactions)
             {
                 <tr>
-                    <td>@stock.Id</td>
-                    <td>@stock.Name</td>
-                    <td>@stock.ISIN</td>
-                    <td>@stock.Price.ToString("C")</td>
-                    <td>@stock.Count</td>
-                    <td>@stock.OrderType</td>
-                    <td>@stock.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td>@transaction.Id</td>
+                    <td>@transaction.Stock.Name</td>
+                    <td>@transaction.Stock.ISIN</td>
+                    <td>@transaction.Price.ToString("C")</td>
+                    <td>@transaction.Count</td>
+                    <td>@transaction.OrderType</td>
+                    <td>@transaction.OrderDate.ToString("yyyy-MM-dd")</td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
 
+<hr />
+<h1>Jahresübersicht</h1>
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+    <RadzenLabel Text="Broker auswählen" Component="year" />
+    <RadzenDropDown @bind-Value=@selectedYear Data="yearDropdown" Change="CalculateYear" Style="width: 100%; max-width: 400px;" Name="year" />
+</RadzenStack>
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>ISIN</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in YearlyStock)
+            {
+                <tr>
+                    <td>@stock.Name</td>
+                    <td>@stock.ISIN</td>
+                    <td>@stock.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 @code {
     [Parameter]
     [EditorRequired]
-    public List<Stock> Stocks { get; set; } = default!;
+    public BrokerWallet BrokerStocks { get; set; } = default!;
+    private List<Transactions> Transactions = new();
+    private List<GroupedStocks> YearlyStock = new();
+    private int selectedYear = DateTime.Now.Year;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        for(var i = 1999; i < 2100; i++)
+        {
+            yearDropdown.Add(i);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        Transactions = BrokerStocks.Transactions;
+        CalculateYear();
+    }
+
+    private void CalculateYear()
+    {
+        YearlyStock = BrokerStocks.SummarizeStocksByYear(selectedYear);
+    }
+
+    private List<int> yearDropdown = new();
 }
